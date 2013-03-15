@@ -4,20 +4,13 @@ require(rgdal)
 require(ggplot2)
 require(geosphere)
 require(plyr)
+require(fields)
 
-setwd("C:/Users/zmyao/Dropbox/Network Planning/230")
+setwd("C:/Users/zmyao/Dropbox/Network Planning/2079")
 
 grid <- readShapeLines("networks-proposed.shp")
 local <- read.csv("./metrics-local.csv", stringsAsFactors=F, skip=1)
 local$settlement_id <- rownames(local)
-
-
-##Checking the data
-class(grid)
-names(grid)
-str(grid)
-grid@lines[[1]]
-
 
 ### Simple data manipulation
 # change shape data into flat file 
@@ -36,25 +29,17 @@ single_connections <- new_prop_grid_2[is.na(new_prop_grid_2$settlement_id),"id"]
 # Assuming the Big Circle is a sphere rather than a ellipses
 data_split <- dlply(grid_data, .(order))
 
-
-# proj4 <- read.csv("metrics-local.csv", nrows=1, header = FALSE)
-# if(grepl("units=m", proj4[1,1])) 
-#     distance <- distVincentySphere(p1, p2)  
-# else 
-#     distance <- distVincentyEllipsoid(p1, p2) 
-
-
-
-
-
-# p1 <- data_split[[1]]
-# p2 <- data_split[[2]]
-# dist <- distVincentyEllipsoid(data_split[[1]][,1:2],data_split[[2]][,1:2])
-dist <- distCosine(data_split[[1]][,1:2],data_split[[2]][,1:2],r=6371010)
+# Introducint the Boolena flag variable proj4 to detect if there is string "units=m" in the 1st line in Metrics-local
+proj4 <- read.csv("metrics-local.csv", nrows=1, header = FALSE)
+if(grepl("units=m", proj4[1,1])) 
+{
+    dist <- sqrt(rowSums((data_split[[1]][,1:2] - data_split[[2]][,1:2])^2))
+}else{
+    dist <- distCosine(data_split[[1]][,1:2],data_split[[2]][,1:2],r=6371010) 
+} 
 dist <- data.frame(dist , id = data_split[[1]][,"id"])
 
-#^  Double the length of gird lines that has only one connection wiht settlement
-tt <- dist
+#  Double the length of gird lines that has only one connection wiht settlement
 dist[dist$id %in% single_connections,"dist"] <- dist[dist$id %in% single_connections,"dist"] * 2
 
 # Merge grid line length with dots & line data
@@ -63,3 +48,8 @@ new_prop_grid <- new_prop_grid[order(new_prop_grid$settlement_id), ]
 
 grid_length_attr <- ddply(new_prop_grid, .(settlement_id), summarize, 
                           half_length =  sum(dist)/2)
+
+local_dist <- merge(local, grid_length_attr, by="settlement_id", all.x=T)
+local_dist[, "settlement_id"] <- NULL
+
+write.csv(local_dist, "local_metrics_local_w_Mv_grid_length.csv", row.names=F)
