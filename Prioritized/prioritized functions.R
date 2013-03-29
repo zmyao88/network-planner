@@ -189,8 +189,63 @@ prioritized.grid <- function(local_df, shape.file)
 
 test <- prioritized.grid(local,proposed)
 
-t1 <- test[[1]]
-t2 <- test[[2]]
+ranked.settlements <- test[[1]]
+
+
+
+#####identify the sub-networks
+non_candidate_df <- test[[2]]
+
+
+###here is something on top of the whole loop
+sub.network.groups <- vector("list")
+counter <- 1
+
+##outer loop stars here
+while(length(unique(non_candidate_df$Name)) != 0)
+{
+    candidate.groups<- unique(non_candidate_df$Name)
+    
+    
+    #initialized with one node
+    node.names <- candidate.groups[1]
+    exit <- F
+    
+    # Inner loop starts from here
+    while(exit == F)
+    {
+        #pick all the segment id associated with that node
+        connected.segments <- unique(non_candidate_df[which(non_candidate_df$Name %in% node.names),"id"])
+        if (length(connected.segments) == 0)
+        {
+            exit <- T    
+        }
+        #search all node name associated with the segment
+        connected.nodes <- unique(non_candidate_df[which(non_candidate_df$id %in% connected.segments),"Name"])
+        #output the names 
+        node.names <- unique(c(node.names, connected.nodes))
+        #delete all the finded nodes from subnetwork
+        non_candidate_df <- subset(non_candidate_df, !(id %in% connected.segments))
+        #     candidate.groups<- unique(non_candidate_df$Name)
+    }
+    sub.network.groups[[counter]] <- node.names
+    counter <- counter + 1
+
+}
+
+sub
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## 13.0 Output csv and shape file with "rankings"
 write.csv(ranked.settlements, "Ranked-Settlement-Nodes-V2.csv", row.names=F)
