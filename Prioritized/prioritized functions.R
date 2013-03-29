@@ -178,74 +178,91 @@ prioritized.grid <- function(local_df, shape.file)
         return(output)
     }
     
+    
+    ###Starting point of the subnetwork ranking function 
+    sub.network.candidate <- function(input_non_candidate_df)
+    {
+        #####identify the sub-networks
+        non_candidate_df <- input_non_candidate_df
+        
+        ###here is something on top of the whole loop
+        sub.network.groups <- vector("list")
+        counter <- 1
+        
+        ##outer loop stars here
+        while(length(unique(non_candidate_df$Name)) != 0)
+        {
+            candidate.groups<- unique(non_candidate_df$Name)
+            
+            #initialized with one node
+            node.names <- candidate.groups[1]
+            exit <- F
+            
+            # Inner loop starts from here
+            while(exit == F)
+            {
+                #pick all the segment id associated with that node
+                connected.segments <- unique(non_candidate_df[which(non_candidate_df$Name %in% node.names),"id"])
+                if (length(connected.segments) == 0)
+                {
+                    exit <- T    
+                }
+                #search all node name associated with the segment
+                connected.nodes <- unique(non_candidate_df[which(non_candidate_df$id %in% connected.segments),"Name"])
+                #output the names 
+                node.names <- unique(c(node.names, connected.nodes))
+                #delete all the finded nodes from subnetwork
+                non_candidate_df <- subset(non_candidate_df, !(id %in% connected.segments))
+                #candidate.groups<- unique(non_candidate_df$Name)
+            }
+            sub.network.groups[[counter]] <- subset(input_non_candidate_df, Name %in% node.names)
+            counter <- counter + 1
+        }
+        
+        #define the function returns the max demo density 
+        max.demo <- function(df, demo_col_name="Demographics...Projected.household.count")
+        {
+            return(df[which(df[,demo_col_name] == max(df[,demo_col_name])),][1,])
+        }
+        candidates.nodes <- ldply(sub.network.groups, max.demo)
+        candidates.nodes <- arrange(candidates.nodes, desc(Demographics...Projected.household.count))
+        branch <- paste("S",(1:length(sub.network.groups)), sep="-")
+        candidates.nodes$branch <- branch
+        
+        candidates.nodes <- subset(candidates.nodes, select=c("Name", "id", "branch"))
+        
+        get.branch <- function(df)
+        {
+            df$branch <- NULL
+            df <- merge(df, candidates.nodes, by = c("Name", "id"), all.x = T)
+            new.candidate.nodes <- subset(df, !is.na(branch))
+            new.candidate.nodes <- mutate(new.candidate.nodes, 
+                                          dist = 0,
+                                          MV.line = 0)
+            #         non.candidate.nodes <- subset(df, is.na(branch))
+            non.candidate.nodes <- df
+            output <- branch_identify(new.candidate.nodes, non.candidate.nodes)
+            return(output[[1]])
+        }
+        ranked.sub.networks <- ldply(sub.network.groups, get.branch)
+        
+        
+        
+        return(ranked.sub.networks)
+    }
+    
     output<- branch_identify(new.candidate.nodes, non.candidate.nodes)
     ranked.settlements <- output[[1]]
-    non_candidate_df <- output[[2]]
-    return(output)
+    ranked.subnetworks <- sub.network.candidate(output[[2]])
+    combined.networks <- rbind.fill(ranked.settlements, ranked.subnetworks)
+    
+    return(combined.networks)
 }
 
 
 
 
 test <- prioritized.grid(local,proposed)
-
-ranked.settlements <- test[[1]]
-
-
-
-#####identify the sub-networks
-non_candidate_df <- test[[2]]
-
-
-###here is something on top of the whole loop
-sub.network.groups <- vector("list")
-counter <- 1
-
-##outer loop stars here
-while(length(unique(non_candidate_df$Name)) != 0)
-{
-    candidate.groups<- unique(non_candidate_df$Name)
-    
-    
-    #initialized with one node
-    node.names <- candidate.groups[1]
-    exit <- F
-    
-    # Inner loop starts from here
-    while(exit == F)
-    {
-        #pick all the segment id associated with that node
-        connected.segments <- unique(non_candidate_df[which(non_candidate_df$Name %in% node.names),"id"])
-        if (length(connected.segments) == 0)
-        {
-            exit <- T    
-        }
-        #search all node name associated with the segment
-        connected.nodes <- unique(non_candidate_df[which(non_candidate_df$id %in% connected.segments),"Name"])
-        #output the names 
-        node.names <- unique(c(node.names, connected.nodes))
-        #delete all the finded nodes from subnetwork
-        non_candidate_df <- subset(non_candidate_df, !(id %in% connected.segments))
-        #     candidate.groups<- unique(non_candidate_df$Name)
-    }
-    sub.network.groups[[counter]] <- node.names
-    counter <- counter + 1
-
-}
-
-sub
-
-
-
-
-
-
-
-
-
-
-
-
 
 ## 13.0 Output csv and shape file with "rankings"
 write.csv(ranked.settlements, "Ranked-Settlement-Nodes-V2.csv", row.names=F)
