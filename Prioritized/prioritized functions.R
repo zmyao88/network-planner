@@ -38,9 +38,23 @@ setwd("C:/Users/zmyao/Dropbox/Network Planning/230")
 #load metrics.local to associated settlement points with proposed grid data
 local <- read.csv("metrics-local.csv", skip=1)
 proposed <- readShapeLines("networks-proposed.shp")
+proj4 <- read.csv("metrics-local.csv", nrows=1, header = FALSE)
 
-prioritized.grid <- function(local_df, shape.file)
+prioritized.grid <- function(local_df, shape.file, proj_var = proj4)
 {
+    dist_fun <- function(points_1, points_2, 
+                         projection_type = proj_var)
+    {
+        if(grepl("units=m", projection_type[1,1])) 
+        {
+            dist <- sqrt(rowSums((points_1 - points_2)^2))
+        }else{
+            dist <- distCosine(points_1,points_2,r=6371010) 
+        } 
+        #     dist <- data.frame(dist , id = data_split[[1]][,"id"])    
+        return(dist)
+    }
+    
     #rename X & Y to long and lat so correspond exactly with proposed grid shape file
     names(local_df)[names(local_df)=="X"] <- "long"
     names(local_df)[names(local_df)=="Y"] <- "lat"
@@ -101,9 +115,10 @@ prioritized.grid <- function(local_df, shape.file)
     ## 11.0 Build new dataframe for ranked settlements -> ranked.settlements
     ## 11.1 determine distance between all nodes
     # data_split <- dlply(non.candidate.nodes, .(order))
-    dist <-  distVincentySphere(candidate.nodes[,1:2],
-                                ghost.nodes[,1:2],
-                                r=6371010) #radius of Earth Network Planner uses
+    dist <- dist_fun(candidate.nodes[,1:2], ghost.nodes[,1:2], proj_var)
+#     dist <-  distVincentySphere(candidate.nodes[,1:2],
+#                                 ghost.nodes[,1:2],
+#                                 r=6371010) #radius of Earth Network Planner uses
     dist <- data.frame(dist, Name = candidate.nodes[,"Name"])
     
     #reassign distance to candidate.nodes dataframe attributing all length to destination or candidate nodes
@@ -156,9 +171,14 @@ prioritized.grid <- function(local_df, shape.file)
                 #^. only needed to compare with nodes in new.seg because candidate is in new.segments & new.candidate.node2 is alos in new.seg 
                 non_candidate_df <- subset(non_candidate_df, !(id %in% new.segments))  
                 #calculate the distance to the new.candidate.nodes                                
-                new.dist <-  distVincentySphere(candidate[,c("long", "lat")],
-                                                new.candidate.nodes2[,c("long", "lat")],
-                                                r=6371010) #radius of Earth Network Planner uses
+                #^. use the new distance function 
+                new.dist <- dist_fun(candidate[,c("long", "lat")],
+                                 new.candidate.nodes2[,c("long", "lat")],
+                                 proj_var)
+                
+#                 new.dist <-  distVincentySphere(candidate[,c("long", "lat")],
+#                                                 new.candidate.nodes2[,c("long", "lat")],
+#                                                 r=6371010) #radius of Earth Network Planner uses
                 new.dist <- data.frame(dist = new.dist, Name = new.candidate.nodes2[,"Name"])
                 #makes compatible 14 variable dataframe for candidate.nodes
                 new.candidate.nodes2 <- merge(new.candidate.nodes2, new.dist)    
@@ -262,7 +282,14 @@ prioritized.grid <- function(local_df, shape.file)
 
 
 
+
+
 test <- prioritized.grid(local,proposed)
+
+
+
+
+
 
 ## 13.0 Output csv and shape file with "rankings"
 write.csv(ranked.settlements, "Ranked-Settlement-Nodes-V2.csv", row.names=F)
