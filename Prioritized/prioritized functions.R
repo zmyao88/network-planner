@@ -299,47 +299,5 @@ test <- prioritized.grid(local,proposed)
 
 
 
-## 13.0 Output csv and shape file with "rankings"
-write.csv(ranked.settlements, "Ranked-Settlement-Nodes-V2.csv", row.names=F)
-write.csv(non.candidate.nodes, "Sub-Network-Nodes-Unsorted-Unranked.csv", row.names=F)
-
-
-
-  
-
-  
-  
-  
-  
-  
-  
-  
-  simple.ranked <- ranked.settlements[,c("Settlement.id",
-                                       "branch",
-                                       "dist",
-                                       "MV.line.per.kwh",
-                                       "sequence",
-                                       "root"
-                                       )
-                                    ]
-non_candidate_df_UTM <- non_candidate_df[,c("Settlement.id",
-                                            "branch")]
-
-
-
-ranked.settlements.UTM <- merge(simple.ranked, local.grid, all.x = T)
-non_candidate_df_UTM <-  merge(non_candidate_df_UTM, local.grid, all.x=T)
-
-
-
-## 13.0 Output csv and shape file with "rankings"
-write.csv(ranked.settlements, "Ranked-Settlement-Nodes-V2.csv", row.names=F)
-write.csv(ranked.settlements.UTM, "Ranked-Settlement-Nodes-UTM.csv", row.names=F)
-write.csv(non_candidate_df, "Sub-Network-Nodes-Unsorted-Unranked.csv", row.names=F)
-write.csv(non_candidate_df_UTM, "Sub-Network-Nodes-Unsorted-Unranked-UTM.csv", row.names=F)
-
-
-
-
-
-##### identify subnetwork clusters
+## 9.0 Output csv and shape file with "rankings"
+write.csv(test, "AllGridNodesRanked", row.names=F)
