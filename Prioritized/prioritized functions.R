@@ -292,12 +292,6 @@ prioritized.grid <- function(local_df, shape.file, proj_var = proj4)
   return(combined.networks)
 }
 
+## 9.0 Test function and Output csv with "rankings"
 test <- prioritized.grid(local,proposed)
-
-
-
-
-
-
-## 9.0 Output csv and shape file with "rankings"
-write.csv(test, "AllGridNodesRanked", row.names=F)
+write.csv(test, "AllGridNodesRanked.csv", row.names=F)
