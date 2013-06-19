@@ -77,7 +77,7 @@ prioritized.grid <- function(local_df, shape.file, proj_var = proj4)
                               "long",
                               "lat",
                               "Metric...System",
-                              "Demographics...Projected.household.count",
+                              "Demand..household....Target.household.count",
                               "Demand...Projected.nodal.demand.per.year")
                            ]
   
