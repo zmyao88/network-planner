@@ -64,7 +64,10 @@ prioritized.grid <- function(local_df, shape.file, proj_var = proj4)
                               "Metric...System",
                               "Demographics...Projected.household.count",
                               "Demand..household....Target.household.count",
-                              "Demand...Projected.nodal.demand.per.year")
+                              "Demand...Projected.nodal.demand.per.year",
+                              "System..grid....Transformer.cost",
+                              "Demographics...Population.count",
+                              "Demographics...Projected.population.count")
                            ]
   
   ## 2.0 Fortify (or flatten) proposed in order to evaluate each vertex or point on shape file lines -> proposed.fortified
@@ -285,6 +288,8 @@ write.csv(test, "GridNodesRanked.csv", row.names=F)
 new.local <- merge(test, local, all.y=T)
 write.csv(new.local, "metrics-local-AllGridNodesRanked.csv", row.names=F)
 
+
+##**********For Castalia's Financial Model****************** 
 ###summarize number of settlements in bins sized by equal number of Settlements-works
 #Determine Sequnce priority breaks that split settlements into specified percentages
 HHoldBinsEqualSettlementQty <- seq(from = 0, to = dim(test)[1], by = dim(test)[1]/10)
@@ -295,5 +300,12 @@ test$sequence.SettlementBin <-
   cut(test$sequence.SettlementBin, HHoldBinsEqualSettlementQty, include.lowest = TRUE)
 
 EqualBins <- ddply(test, .(sequence.SettlementBin), summarize, 
-                   Settlements = nobs(Demographics...Projected.household.count, na.rm=T), 
-                   HHold.Sum = sum(Demographics...Projected.household.count, na.rm=T))
+                   Settlements = nobs(Demand..household....Target.household.count, na.rm=T), 
+                   HHold.Sum = sum(Demand..household....Target.household.count, na.rm=T),
+                   Transformer.Initial.Cost = sum(System..grid....Transformer.cost, na.rm=T),
+                   MV.line.length = sum(dist),
+                   Projected30yr.Population = sum(Demographics...Projected.population.count),
+                   Population = sum(Demographics...Population.count)
+                   )
+
+write.csv(EqualBins, "staged-connections-and-system-data.csv", row.names=F)
