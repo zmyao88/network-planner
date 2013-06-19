@@ -63,6 +63,7 @@ prioritized.grid <- function(local_df, shape.file, proj_var = proj4)
                               "lat",
                               "Metric...System",
                               "Demographics...Projected.household.count",
+                              "Demand..household....Target.household.count",
                               "Demand...Projected.nodal.demand.per.year")
                            ]
   
@@ -284,33 +285,15 @@ write.csv(test, "GridNodesRanked.csv", row.names=F)
 new.local <- merge(test, local, all.y=T)
 write.csv(new.local, "metrics-local-AllGridNodesRanked.csv", row.names=F)
 
-
-#Replace 0 Population values with NA value, 0 populations were removed clusters
-#I do this because populations that are aready grid connected and not under analysis...
-#had populations manually set to 0, but NA is a better representative in R
-local$Demographics...Projected.household.count[which(local$Demographics...Projected.household.count==0)] <- NA
-
 ###summarize number of settlements in bins sized by equal number of Settlements-works
-#Determine HHsize/settlement breaks that split settlements into specified percentages
-HHoldBinsEqualSettlementQty <- quantile(local$Demographics...Projected.household.count, 
-                                        probs = c(.2, .4, .6, .8, 1), na.rm=T)#break settlements into quantiles @ 20, 40, 60, 80 & 100%
-#Determine Settlement Bins                        
-local$Demographics...Projected.household.count.SettlementBin <- 
-  cut(local$Demographics...Projected.household.count, HHoldBinsEqualSettlementQty, include.lowest = TRUE)
+#Determine Sequnce priority breaks that split settlements into specified percentages
+HHoldBinsEqualSettlementQty <- seq(from = 0, to = dim(test)[1], by = dim(test)[1]/10)
+  #break settlements into quantiles @ 20, 40, 60, 80 & 100%
+test$sequence.SettlementBin <- 1:dim(test)[1]
+  #Determine Settlement Bins                        
+test$sequence.SettlementBin <- 
+  cut(test$sequence.SettlementBin, HHoldBinsEqualSettlementQty, include.lowest = TRUE)
 
-EqualBins <- ddply(local, .(Demographics...Projected.household.count.SettlementBin), summarize, 
+EqualBins <- ddply(test, .(sequence.SettlementBin), summarize, 
                    Settlements = nobs(Demographics...Projected.household.count, na.rm=T), 
                    HHold.Sum = sum(Demographics...Projected.household.count, na.rm=T))
-
-##using cut function to divide values increments that are 10 equal parts based on the max value(HHolds per settlement)
-##works but not too useful as high outlier throws off bins
-##most community sizes are small and end up being in first bin
-local$Demographics...Projected.household.count.equalbins <- 
-  cut(local$Demographics...Projected.household.count, 
-      10, include.lowest = TRUE)
-BinSummaryEqualSettlements <- ddply(local, .(Demographics...Projected.household.count.equalbins), summarize,
-                                    HHold.Sum = sum(Demographics...Projected.household.count, na.rm=T),
-                                    Settlements = nobs(Demographics...Projected.household.count, na.rm=T)
-)
-
-
