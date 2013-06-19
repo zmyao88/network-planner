@@ -22,7 +22,7 @@ library(PBSmapping)
 
 
 # ##Jonathan's directory
-setwd("~/Dropbox/WB/Liberia/Modeling/March2013/NPOutputs/273-JC working")
+setwd("~/Dropbox/WB/Liberia/Modeling/2013-05-06/NPOutputs/342")
 # #specify directory that shapefiles sits within 
 #folder <- "/Users/SharedSolar/Dropbox/Indonesia Geospatial Analysis/Data Modeling and Analysis/NPoutputs/R scripts/JC-working/230/"
 
@@ -294,4 +294,7 @@ prioritized.grid <- function(local_df, shape.file, proj_var = proj4)
 
 ## 9.0 Test function and Output csv with "rankings"
 test <- prioritized.grid(local,proposed)
-write.csv(test, "AllGridNodesRanked.csv", row.names=F)
+write.csv(test, "GridNodesRanked.csv", row.names=F)
+
+new.local <- merge(test, local, all.y=T)
+write.csv(new.local, "metrics-local-AllGridNodesRanked.csv", row.names=F)
