@@ -13,8 +13,11 @@ library(maptools)
 library(stringr)
 library(PBSmapping)
 
+require(gdata)
+
+
 # ##Jonathan's directory
-setwd("~/Dropbox/Indonesia Energy Access Scale up Project/Modeling/EI Outputs/230")
+setwd("~/Dropbox/WB/Liberia/Modeling/2013-05-06/NPOutputs/1X-200Max-N356")
 
 # #specify directory that shapefiles sits within 
 #folder <- "/Users/SharedSolar/Dropbox/Indonesia Geospatial Analysis/Data Modeling and Analysis/NPoutputs/R scripts/JC-working/230/"
@@ -305,7 +308,8 @@ EqualBins <- ddply(test, .(sequence.SettlementBin), summarize,
                    Transformer.Initial.Cost = sum(System..grid....Transformer.cost, na.rm=T),
                    MV.line.length = sum(dist),
                    Projected30yr.Population = sum(Demographics...Projected.population.count),
-                   Population = sum(Demographics...Population.count)
+                   Population = sum(Demographics...Population.count),
+                   Total.Demand.kWh = sum(Demand...Projected.nodal.demand.per.year)
                    )
 
 write.csv(EqualBins, "staged-connections-and-system-data.csv", row.names=F)

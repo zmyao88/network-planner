@@ -22,7 +22,7 @@ library(PBSmapping)
 
 
 # ##Jonathan's directory
-setwd("~/Dropbox/WB/Liberia/Modeling/2013-05-06/NPOutputs/342")
+setwd("~/Dropbox/WB/Liberia/Modeling/2013-05-06/NPOutputs/1X-200Max-N356")
 # #specify directory that shapefiles sits within 
 #folder <- "/Users/SharedSolar/Dropbox/Indonesia Geospatial Analysis/Data Modeling and Analysis/NPoutputs/R scripts/JC-working/230/"
 
