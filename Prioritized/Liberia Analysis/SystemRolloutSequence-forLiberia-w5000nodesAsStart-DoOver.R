@@ -1,3 +1,9 @@
+#sort NetworkPlanner's "grid" settlements nodes based on a global priority scheme 
+#while denoting each unique branch they're originating from 
+#using an implementation of Prim's algorithm on the proposed.grid network.  
+
+rm(list=ls())
+#libraries that all may or may not be used in script
 library(plyr)
 library(ggplot2)
 library(sp)
@@ -10,35 +16,25 @@ library(PBSmapping)
 require(gdata)
 
 
-###load snapshot
-setwd("~/Dropbox/WB/Liberia/Modeling/2013-05-06/NPOutputs/0X-200Max-snapshot-N361")
-local.snapshot <- read.csv("metrics-local.csv", skip=1)
-local.snapshot$Settlement.id <- rownames(local)
-proposed.snapshot <- readShapeLines("networks-proposed.shp")
-
-###load 1X
+# ##Jonathan's directory
 setwd("~/Dropbox/WB/Liberia/Modeling/2013-05-06/NPOutputs/1X-200Max-N356")
-local.1X <- read.csv("metrics-local.csv", skip=1)
-local.1X$Settlement.id <- rownames(local)
-proposed.1X <- readShapeLines("networks-proposed.shp")
 
-###load 2X
-setwd("~/Dropbox/WB/Liberia/Modeling/2013-05-06/NPOutputs/2X-200Max-N358")
-local.2X <- read.csv("metrics-local.csv", skip=1)
-local.2X$Settlement.id <- rownames(local)
-proposed.2X <- readShapeLines("networks-proposed.shp")
+# #specify directory that shapefiles sits within 
+#folder <- "/Users/SharedSolar/Dropbox/Indonesia Geospatial Analysis/Data Modeling and Analysis/NPoutputs/R scripts/JC-working/230/"
 
-###load 3X
-setwd("~/Dropbox/WB/Liberia/Modeling/2013-05-06/NPOutputs/3X-200Max-N360")
-local.3X <- read.csv("metrics-local.csv", skip=1)
-local.3X$Settlement.id <- rownames(local)
-proposed.3X <- readShapeLines("networks-proposed.shp")
-
-#same projection for all scenarios
+##1.0 - Import metrics.local for only grid-proposed nodes -> local.grid
+#load metrics.local to associated settlement points with proposed grid data
+local <- read.csv("metrics-local.csv", skip=1)
+proposed <- readShapeLines("networks-proposed.shp")
 proj4 <- read.csv("metrics-local.csv", nrows=1, header = FALSE)
 
+#use generic row names for unique ID of each unique settlement point
+local$Settlement.id <- rownames(local)
 
-####Priority Function#########
+##determine if projection is in UTM 
+#shape.file <-proposed
+#local_df <- local
+
 prioritized.grid <- function(local_df, shape.file, proj_var = proj4) 
 {
   dist_fun <- function(points_1, points_2, projection_type = proj4)
@@ -93,22 +89,7 @@ prioritized.grid <- function(local_df, shape.file, proj_var = proj4)
   merged$root <- NA  ##keep an account of which root node branches originate from 
   merged$branch[which(merged$fake.node == T)] <- branch
   merged$root[which(merged$fake.node == T)] <- branch
-  
-  ###** convert to lat/long here if needed determine distance between all nodes
-  #   if(grepl("utm", proj4[1,1])) 
-  #   {
-  #     ## zone <-  regmatches(+zone="XX") // identify which zone projection is in from 1-60 based on proj4
-  #     ##best to extract zone from proj4 string if possible
-  #     attr(merged, "zone") <- 29
-  #     attr(merged, "projection") <- "UTM"
-  #     names(merged)[names(merged)=="long"] <- "X"
-  #     names(merged)[names(merged)=="lat"] <- "Y"
-  #     merged <- convUL(merged, km=F, southern=F)
-  #     names(merged)[names(merged)=="X"] <- "long"
-  #     names(merged)[names(merged)=="Y"] <- "lat"
-  #   }
-  # 
-  
+
   ## 5.0 Find all nodes that match with segments, aka in same "group",  of "fake.nodes"
   ## and label them as "start.nodes" preserving the "branch.id" and "distance" values
   ghost.nodes <- subset(merged, (fake.node == TRUE))
@@ -143,6 +124,21 @@ prioritized.grid <- function(local_df, shape.file, proj_var = proj4)
   #calculate the unitized MV line required per annual kWh delivered to connect each candidate node
   new.candidate.nodes <- mutate(new.candidate.nodes, 
                                 MV.line.per.kwh = dist/Demand...Projected.nodal.demand.per.year)
+  
+  ##7.2*** Add in any non-candidate node w/ population >5,000 as a start point too!
+  cities <- non.candidate.nodes[which(non.candidate.nodes$Demographics...Population.count>5000),]
+  #Designate city start points as MuniGrids
+  cities$branch <- paste("MuniGrid",(1:dim(cities)[1]), sep="-")
+  cities$root <- paste("MuniGrid",(1:dim(cities)[1]), sep="-")
+  #Give city start centers very low non-zero distance 
+  cities$dist <- 0.999
+  cities <- mutate(cities, MV.line.per.kwh = dist/Demand...Projected.nodal.demand.per.year)  
+  #Combine MuniGrid starts with Existing Grid start points   
+  new.candidate.nodes <- rbind.fill(new.candidate.nodes, cities)                     
+  
+  
+  
+  
   
   branch_identify <- function(candidate_df, non_candidate_df)
   {
@@ -288,57 +284,25 @@ prioritized.grid <- function(local_df, shape.file, proj_var = proj4)
   return(combined.networks)
 }
 
-local.snapshot.sorted <- prioritized.grid(local.snapshot, proposed.snapshot)
-local.1X.sorted <- prioritized.grid(local.1X, proposed.1X)
-local.2X.sorted <- prioritized.grid(local.2X, proposed.2X)
-local.3X.sorted <- prioritized.grid(local.3X, proposed.3X)
+x`## 9.0 Test function and Output csv with "rankings"
+test <- prioritized.grid(local,proposed)
+write.csv(test, "GridNodesRanked.csv", row.names=F)
+
+new.local <- merge(test, local, all.y=T)
+write.csv(new.local, "metrics-local-AllGridNodesRanked.csv", row.names=F)
 
 
-##Output csv with 4 scenarios sorted side by side grid nodes
-
-
-local.snapshot.short <- local.snapshot.sorted[,c("Settlement.id",
-                                     "sequence")]
-colnames(local.snapshot.short)[2] <- "sequence.snapshot"
-
-local.1X.short <- local.1X.sorted[,c("Settlement.id",
-                                "sequence")]
-colnames(local.1X.short)[2] <- "sequence.1X"
-
-local.2X.short <- local.2X.sorted[,c("Settlement.id",
-                                     "sequence")]
-colnames(local.2X.short)[2] <- "sequence.2X"
-
-
-local.3X.short <- local.3X.sorted[,c("Settlement.id",
-                                     "sequence")]
-colnames(local.3X.short)[2] <- "sequence.3X"
-colnames(local.3X.sorted)[21] <- "sequence.3X"
-
-
-##Merge shortened dataset
-
-test <- merge(local.snapshot.short, local.1X.short, all = TRUE)
-test <- merge(test, local.2X.short, all = TRUE)
-test <- merge(test, local.3X.sorted, all = TRUE)
-
-##Output csv 
-setwd("~/Dropbox/WB/Liberia/Modeling/2013-05-06/NPOutputs")
-write.csv(test, "staged-connections-for-200max-series.csv", row.names=F)
-
-
-
-##**********For Financial Model Rollout****************** 
+##**********For Castalia's Financial Model****************** 
 ###summarize number of settlements in bins sized by equal number of Settlements-works
 #Determine Sequnce priority breaks that split settlements into specified percentages
-HHoldBinsEqualSettlementQty <- seq(from = 0, to = dim(local.3X.sorted)[1], by = dim(local.3X.sorted)[1]/10)
-#break settlements into quantiles @ 20, 40, 60, 80 & 100%
-local.3X.sorted$sequence.SettlementBin <- 1:dim(local.3X.sorted)[1]
-#Determine Settlement Bins                        
-local.3X.sorted$sequence.SettlementBin <- 
-  cut(local.3X.sorted$sequence.SettlementBin, HHoldBinsEqualSettlementQty, include.lowest = TRUE)
+HHoldBinsEqualSettlementQty <- seq(from = 0, to = dim(test)[1], by = dim(test)[1]/10)
+  #break settlements into quantiles @ 20, 40, 60, 80 & 100%
+test$sequence.SettlementBin <- 1:dim(test)[1]
+  #Determine Settlement Bins                        
+test$sequence.SettlementBin <- 
+  cut(test$sequence.SettlementBin, HHoldBinsEqualSettlementQty, include.lowest = TRUE)
 
-EqualBins <- ddply(local.3X.sorted, .(sequence.SettlementBin), summarize, 
+EqualBins <- ddply(test, .(sequence.SettlementBin), summarize, 
                    Settlements = nobs(Demand..household....Target.household.count, na.rm=T), 
                    HHold.Sum = sum(Demand..household....Target.household.count, na.rm=T),
                    Transformer.Initial.Cost = sum(System..grid....Transformer.cost, na.rm=T),
@@ -346,6 +310,6 @@ EqualBins <- ddply(local.3X.sorted, .(sequence.SettlementBin), summarize,
                    Projected30yr.Population = sum(Demographics...Projected.population.count),
                    Population = sum(Demographics...Population.count),
                    Total.Demand.kWh = sum(Demand...Projected.nodal.demand.per.year)
-)
+                   )
 
 write.csv(EqualBins, "staged-connections-and-system-data.csv", row.names=F)
