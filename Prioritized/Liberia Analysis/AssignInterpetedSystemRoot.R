@@ -17,16 +17,16 @@ master$Geographic.System.Phase3 <- NA
 # 1- Mano Substation 
 master$Geographic.System.Phase1[master$root %in% c(1,
                                                    2,
-                                                   3)] <- "ManoSubstation"
+                                                   3)] <- "Mano Substation"
 #Phases 2 and 3 still remain primarily on substation  
-master$Geographic.System.Phase2[master$Geographic.System.Phase1 %in% "ManoSubstation"] <- "ManoSubstation"
-master$Geographic.System.Phase3[master$Geographic.System.Phase1 %in% "ManoSubstation"] <- "ManoSubstation"
+master$Geographic.System.Phase2[master$Geographic.System.Phase1 %in% "Mano Substation"] <- "Mano Substation"
+master$Geographic.System.Phase3[master$Geographic.System.Phase1 %in% "Mano Substation"] <- "Mano Substation"
 
 # 2-Tubmanburg
 master$Geographic.System.Phase1[master$root %in% c("MuniGrid-2")] <- "Tubmanburg MuniGrid"
 #Phases 2 and 3 still remain primarily on substation  
 master$Geographic.System.Phase2[master$Geographic.System.Phase1 %in% "Tubmanburg MuniGrid"] <- "Tubmanburg MuniGrid"
-master$Geographic.System.Phase3[master$Geographic.System.Phase1 %in% "Tubmanburg MuniGrid"] <- "Monrovia"
+master$Geographic.System.Phase3[master$Geographic.System.Phase1 %in% "Tubmanburg MuniGrid"] <- "Monrovia System"
 
 # 3- Monrovia Substation 
 master$Geographic.System.Phase1[master$root %in% c(10, 11, 12, 13, 14, 15,
@@ -44,8 +44,8 @@ master$Geographic.System.Phase1[master$root %in% c(16,
                                                    18,
                                                    "MuniGrid-30")] <- "Buchanan Substation"
 #Phases 2 and 3 still remain primarily on substation  
-master$Geographic.System.Phase2[master$Geographic.System.Phase1 %in% "ManoSubstation"] <- "Buchanan Substation"
-master$Geographic.System.Phase3[master$Geographic.System.Phase1 %in% "ManoSubstation"] <- "Buchanan Substation"
+master$Geographic.System.Phase2[master$Geographic.System.Phase1 %in% "Buchanan Substation"] <- "Buchanan Substation"
+master$Geographic.System.Phase3[master$Geographic.System.Phase1 %in% "Buchanan Substation"] <- "Buchanan Substation"
 
 # 5- Harbel MuniGrid 
 master$Geographic.System.Phase1[master$root %in% c("MuniGrid-12",
@@ -74,7 +74,7 @@ master$Geographic.System.Phase3[master$Geographic.System.Phase1 %in% "Bong Mines
 # 8- Yogbo  
 master$Geographic.System.Phase1[master$root %in% c("MuniGrid-36")] <- "Yogbo MuniGrid"
 #Phases 2 and 3 still remain primarily on substation  
-master$Geographic.System.Phase2[master$Geographic.System.Phase1 %in% "Yogbo MuniGrid"] <- "Yogbo Mines MuniGrid"
+master$Geographic.System.Phase2[master$Geographic.System.Phase1 %in% "Yogbo MuniGrid"] <- "Yogbo MuniGrid"
 master$Geographic.System.Phase3[master$Geographic.System.Phase1 %in% "Yogbo MuniGrid"] <- "Monrovia System"
 
 # 9- Kpayeakwe MuniGrid  
@@ -82,13 +82,13 @@ master$Geographic.System.Phase1[master$root %in% c("MuniGrid-25",
                                                    "MuniGrid-35",
                                                    "MuniGrid-33")] <- "Kpayeakwe MuniGrid"
 #Phases 2 and 3 still remain primarily on substation  
-master$Geographic.System.Phase2[master$Geographic.System.Phase1 %in% "Kpayeakwe MuniGrid"] <- "Yogbo Mines MuniGrid"
+master$Geographic.System.Phase2[master$Geographic.System.Phase1 %in% "Kpayeakwe MuniGrid"] <- "Yogbo MuniGrid"
 master$Geographic.System.Phase3[master$Geographic.System.Phase1 %in% "Kpayeakwe MuniGrid"] <- "Monrovia System"
 
 # 10- Suakoko MuniGrid  
 master$Geographic.System.Phase1[master$root %in% c("MuniGrid-40")] <- "Suakoko MuniGrid"
 #Phases 2 and 3 still remain primarily on substation  
-master$Geographic.System.Phase2[master$Geographic.System.Phase1 %in% "Suakoko MuniGrid"] <- "Yogbo Mines MuniGrid"
+master$Geographic.System.Phase2[master$Geographic.System.Phase1 %in% "Suakoko MuniGrid"] <- "Yogbo MuniGrid"
 master$Geographic.System.Phase3[master$Geographic.System.Phase1 %in% "Suakoko MuniGrid"] <- "Monrovia System"
 
 # 11- Gbarnga MuniGrid  
