@@ -17,7 +17,7 @@ require(gdata)
 
 
 # ##Jonathan's directory
-setwd("~/Dropbox/WB/Liberia/Modeling/2013-05-06/NPOutputs/1X-200Max-N356")
+setwd("~/Desktop/modeling/2013-05-06/NPOutputs/360")
 
 # #specify directory that shapefiles sits within 
 #folder <- "/Users/SharedSolar/Dropbox/Indonesia Geospatial Analysis/Data Modeling and Analysis/NPoutputs/R scripts/JC-working/230/"
@@ -284,7 +284,7 @@ prioritized.grid <- function(local_df, shape.file, proj_var = proj4)
   return(combined.networks)
 }
 
-x`## 9.0 Test function and Output csv with "rankings"
+## 9.0 Test function and Output csv with "rankings"
 test <- prioritized.grid(local,proposed)
 write.csv(test, "GridNodesRanked.csv", row.names=F)
 

@@ -17,10 +17,10 @@ require(gdata)
 
 
 # ##Jonathan's directory
-setwd("~/Dropbox/WB/Liberia/Modeling/2013-05-06/NPOutputs/1X-200Max-N356")
+#setwd("~/Dropbox/WB/Liberia/Modeling/2013-05-06/NPOutputs/1X-200Max-N356")
 
 # #specify directory that shapefiles sits within 
-#folder <- "/Users/SharedSolar/Dropbox/Indonesia Geospatial Analysis/Data Modeling and Analysis/NPoutputs/R scripts/JC-working/230/"
+folder <- "/Users/SharedSolar/Dropbox/Indonesia Geospatial Analysis/Data Modeling and Analysis/NPoutputs/R scripts/JC-working/230/"
 
 ##1.0 - Import metrics.local for only grid-proposed nodes -> local.grid
 #load metrics.local to associated settlement points with proposed grid data

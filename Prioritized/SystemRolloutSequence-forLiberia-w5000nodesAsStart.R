@@ -60,10 +60,7 @@ prioritized.grid <- function(local_df, shape.file, proj_var = proj4)
   names(local_df)[names(local_df)=="Y"] <- "lat"
   #subset and truncate local file for most relevant values
   local.grid <- subset(local_df, Metric...System=="grid")
-  local.grid <- local.grid[,c("Name",
-                              "Settlement.id",
-                              "long",
-                              "lat",
+  local.grid <- local.grid[,c(
                               "Metric...System",
                               "Demographics...Projected.household.count",
                               "Demand..household....Target.household.count",
@@ -157,7 +154,7 @@ prioritized.grid <- function(local_df, shape.file, proj_var = proj4)
     {
       candidate <- subset(candidate_df, MV.line.per.kwh == min(MV.line.per.kwh))
       #determine which new line segments are associated with candidate and now eligible for next sequence
-      new.segments <- unique(non_candidate_df$id[which((non_candidate_df$id %in% candidate$id))])
+      new.segments <- unique(non_candidate_df$id"[which((non_candidate_df$id %in% candidate$id))]")
       #ensure only a single version of the candidate node is selected while we preserve all branching nodes associated
       candidate <- subset(candidate_df, MV.line.per.kwh == min(MV.line.per.kwh))[1,]
       
